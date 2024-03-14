@@ -1,0 +1,16 @@
+[tool.poetry]
+name = "ankiapi"
+version = "0.1.0"
+description = ""
+authors = ["RodionfromHSE <rodion.khvorostov@jetbrains.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+notebook = "^7.1.1"
+requests = "^2.31.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

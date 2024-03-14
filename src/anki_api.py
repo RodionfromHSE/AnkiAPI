@@ -4,7 +4,15 @@ from warnings import warn
 
 
 class AnkiAPI:
-    def __init__(self, url="http://localhost:8765", version=6):
+    """
+    A class to interact with the AnkiConnect API.
+    """
+    def __init__(self, url: str = "http://localhost:8765", version: int = 6):
+        """
+        Initializes the AnkiAPI object.
+        :@param url: The URL of the AnkiConnect API.
+        :@param version: The version of the AnkiConnect API.
+        """
         self.url = url
         self.version = version
         try:
@@ -15,6 +23,7 @@ class AnkiAPI:
                                "extension?")
 
     def check_server(self):
+        """Check whether the AnkiConnect server is running."""
         headers = {"Content-Type": "application/json"}
         payload = {
             "action": "ping",
@@ -27,7 +36,7 @@ class AnkiAPI:
         except requests.exceptions.RequestException:
             raise RuntimeError('AnkiConnect is not running')
 
-    def add_flashcard(self, deck_name, front, back, path_to_audio=None):
+    def add_flashcard(self, deck_name, front, back):
         """
         Adds a flashcard to the specified deck in Anki.
 
@@ -35,9 +44,7 @@ class AnkiAPI:
             deck_name (str): The name of the deck to add the card to.
             front (str): The content for the front side of the card.
             back (str): The content for the back side of the card.
-            path_to_audio (str, optional): Path to an audio file to add to the back. Defaults to None.
         """
-
         headers = {"Content-Type": "application/json"}
         payload = {
             "action": "addNote",
@@ -54,15 +61,6 @@ class AnkiAPI:
             }
         }
 
-        # Add audio if provided
-        if path_to_audio:
-            try:
-                with open(path_to_audio, "rb") as audio_file:
-                    audio_bytes = audio_file.read()
-                audio_base64 = audio_bytes.encode("base64").decode("utf-8")
-                payload["params"]["note"]["fields"]["Back"] += f"<br>[sound:{audio_base64}]"
-            except FileNotFoundError:
-                warn(f"Audio file not found at: {path_to_audio}")
 
         response = requests.post(self.url, data=json.dumps(payload), headers=headers)
         response.raise_for_status()
@@ -71,8 +69,10 @@ class AnkiAPI:
             raise Exception(result["error"])
         return result["result"]
 
-    def create_deck(self, deck_name):
-        # Connect to AnkiConnect API
+    def create_deck(self, deck_name: str) -> None:
+        """
+        Creates a new deck in Anki if it doesn't already exist.
+        """
         headers = {"Content-Type": "application/json"}
         payload = {
             "action": "createDeck",
