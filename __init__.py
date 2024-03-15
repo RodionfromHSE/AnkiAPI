@@ -1,3 +1,3 @@
-from src.anki_api import AnkiAPI
+from .src.anki_api import AnkiApi
 
-__all__ = ["AnkiAPI"]
+__all__ = ["AnkiApi"]

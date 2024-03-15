@@ -3,7 +3,7 @@ import requests
 from warnings import warn
 
 
-class AnkiAPI:
+class AnkiApi:
     """
     A class to interact with the AnkiConnect API.
     """
@@ -62,6 +62,32 @@ class AnkiAPI:
         }
 
 
+        response = requests.post(self.url, data=json.dumps(payload), headers=headers)
+        response.raise_for_status()
+        result = response.json()
+        if result.get("error"):
+            msg = result["error"]
+            if "duplicate" in msg:
+                warn(f"Flashcard '{front}' already exists in deck '{deck_name}'")
+            else:
+                raise Exception(result["error"])
+        return result["result"]
+    
+    
+    def add_audio(self, path: str, filename: str) -> None:
+        """Add media content to Anki
+        :@param path: The path to the media file
+        :@param hash: The hash of the media file
+        """
+        headers = {"Content-Type": "application/json"}
+        payload = {
+            "action": "storeMediaFile",
+            "version": self.version,
+            "params": {
+                "filename": filename,
+                "path": path
+            }
+        }
         response = requests.post(self.url, data=json.dumps(payload), headers=headers)
         response.raise_for_status()
         result = response.json()
