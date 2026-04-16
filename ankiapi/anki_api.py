@@ -11,6 +11,12 @@ class AnkiApi:
     """A class to interact with the AnkiConnect API."""
 
     def __init__(self, url: str = _DEFAULT_URL, version: int = 6):
+        if url != _DEFAULT_URL:
+            warn(
+                f"Non-default AnkiConnect URL: {url}. "
+                f"Default is {_DEFAULT_URL} (IPv4) to avoid IPv6 resolution issues.",
+                stacklevel=2,
+            )
         self.url = url
         self.version = version
         self.check_server()
