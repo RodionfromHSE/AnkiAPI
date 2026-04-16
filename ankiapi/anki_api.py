@@ -2,39 +2,37 @@ import json
 import requests
 from warnings import warn
 
+# 127.0.0.1 instead of localhost: AnkiConnect binds to IPv4. Using "localhost"
+# risks resolving to IPv6 and hitting unrelated processes on the same port.
+_DEFAULT_URL = "http://127.0.0.1:8765"
+
 
 class AnkiApi:
-    """
-    A class to interact with the AnkiConnect API.
-    """
-    def __init__(self, url: str = "http://localhost:8765", version: int = 6):
-        """
-        Initializes the AnkiAPI object.
-        :@param url: The URL of the AnkiConnect API.
-        :@param version: The version of the AnkiConnect API.
-        """
+    """A class to interact with the AnkiConnect API."""
+
+    def __init__(self, url: str = _DEFAULT_URL, version: int = 6):
         self.url = url
         self.version = version
-        try:
-            self.check_server()
-        except Exception:
-            # TODO: Make error output less verbose
-            raise RuntimeError("Can't connect to Anki. Maybe you forgot to open Anki or to download the needed "
-                               "extension?")
+        self.check_server()
 
-    def check_server(self):
-        """Check whether the AnkiConnect server is running."""
-        headers = {"Content-Type": "application/json"}
-        payload = {
-            "action": "ping",
-            "version": self.version,
-        }
+    def check_server(self) -> None:
+        """Verify the endpoint is a real AnkiConnect server (not just any HTTP 200)."""
         try:
-            response = requests.post(self.url, data=json.dumps(payload), headers=headers)
-            response.raise_for_status()
-            print('AnkiConnect is running')
-        except requests.exceptions.RequestException:
-            raise RuntimeError('AnkiConnect is not running')
+            resp = requests.post(
+                self.url,
+                json={"action": "version", "version": self.version},
+                timeout=2,
+            )
+            resp.raise_for_status()
+            data = resp.json()
+            if "result" not in data or data.get("error") is not None:
+                raise ValueError("Not a valid AnkiConnect response")
+            print("AnkiConnect is running")
+        except Exception:
+            raise RuntimeError(
+                "Can't connect to Anki. Maybe you forgot to open Anki "
+                "or to download the needed extension?"
+            )
 
     def add_flashcard(self, deck_name, front, back):
         """
